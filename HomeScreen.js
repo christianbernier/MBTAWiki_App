@@ -130,7 +130,7 @@ export default ({navigation}) => {
             color: "#A0AEC0"
           }}
         >
-          Created by Christian Bernier ©2020
+          MBTA Wiki App v.0.1.0 — Created by Christian Bernier ©2020
         </Text>
       </View>
       <View style={{ height: 50 }} />
