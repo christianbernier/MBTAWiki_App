@@ -21,6 +21,9 @@ export default ({ sta, staFullName }) => {
   const [rawPredictions, setRawPredictions] = useState([]);
   const [routesAdded, setRoutesAdded] = useState(false);
   const [destsAdded, setDestsAdded] = useState(false);
+  const [dispsAdded, setDispsAdded] = useState(false);
+
+  let tripsAdded = [];
 
   useEffect(() => {
     if(predictions.length > 1){
@@ -72,44 +75,9 @@ export default ({ sta, staFullName }) => {
           lineColor = "#FFC72C";
         }
 
-        let displayLine = route;
-        if(route.indexOf("CR-") !== -1){
-          switch(route){
-            case "CR-Worcester": displayLine = "Framingham/Worcester Line"; break;
-            case "CR-Franklin": displayLine = "Franklin Line/Foxboro Pilot"; break;
-            case "CR-Kingston": displayLine = "Kingston/Plymouth Line"; break;
-            case "CR-Middleborough": displayLine = "Middleborough/Lakeville Line"; break;
-            case "CR-Newburyport": displayLine = "Newburyport/Rockport Line"; break;
-            case "CR-Providence": displayLine = "Providence/Stoughton Line"; break;
-            default: displayLine = route.substr(3) + " Line";
-          }
-        } else if(route.indexOf("Green-") !== -1){
-          displayLine = `Green Line ${route.substr(6)} Branch`
-        } else if(["Red", "Blue", "Orange", "Mattapan"].indexOf(route) !== -1){
-          displayLine = route + " Line";
-        } else if(route === "741"){
-          displayLine = "SL1";
-        } else if(route === "742"){
-          displayLine = "SL2";
-        } else if(route === "743"){
-          displayLine = "SL3";
-        } else if(route === "751"){
-          displayLine = "SL4";
-        } else if(route === "749"){
-          displayLine = "SL5";
-        } else if(route === "746"){
-          displayLine = "SL Shuttle";
-        } else if(route === "747"){
-          displayLine = "CT2";
-        } else if(route === "708"){
-          displayLine = "CT3";
-        } else{
-          displayLine = `Route ${route}`
-        }
-
         predictionsNow.push({
           line: route,
-          displayLine: displayLine,
+          displayLine: "",
           show: true,
           lineColor: lineColor,
           destinations: []
@@ -128,7 +96,32 @@ export default ({ sta, staFullName }) => {
   }, [rawPredictions]);
 
   useEffect(() => {
-    if (routesAdded) {
+    if(routesAdded){
+      let predictionsNow = JSON.parse(JSON.stringify(predictions));
+      for(const pred of predictionsNow){
+        if(pred.line){
+          fetch(`https://api-v3.mbta.com/routes/${pred.line}?api_key=e9cca8f8775749b9b79e4bed57f6216c`)
+          .then(data => data.json())
+          .then(data => {
+            if(data.data.attributes.short_name){
+              pred.displayLine = data.data.attributes.short_name;
+              if(["B", "C", "D", "E"].indexOf(pred.displayLine) !== -1){
+                pred.displayLine = `Green Line ${pred.displayLine} Branch`;
+              }
+            } else{
+              pred.displayLine = data.data.attributes.long_name;
+            }
+          })
+        }
+      }
+      setPredictions([]);
+      setPredictions(predictionsNow);
+      setTimeout(() => setDispsAdded(true), 500);
+    }
+  }, [routesAdded]);
+
+  useEffect(() => {
+    if (dispsAdded) {
       let predictionsNow = JSON.parse(JSON.stringify(predictions));
       for (const pred of rawPredictions) {
         const route = pred.relationships.route.data.id;
@@ -178,7 +171,7 @@ export default ({ sta, staFullName }) => {
           });
       }
     }
-  }, [routesAdded]);
+  }, [dispsAdded]);
 
   function prettyTime(t, type){
     let time = new Date(t);
@@ -231,18 +224,32 @@ export default ({ sta, staFullName }) => {
           continue;
         }
 
+
         for(let i = 0; i < predictionsNow.length; i++){
           for(let j = 0; j < predictionsNow[i].destinations.length; j++){
             for(let k = 0; k < predictionsNow[i].destinations[j].tripIDs.length; k++){
               if(predictionsNow[i].destinations[j].tripIDs[k] === pred.relationships.trip.data.id){
-                if(predictionsNow[i].destinations[j].times.indexOf(time) === -1){
+                if(predictionsNow[i].destinations[j].times.indexOf(time) === -1 && tripsAdded.indexOf(pred.relationships.trip.data.id) === -1){
                   predictionsNow[i].destinations[j].times.push(time);
+                  tripsAdded.push(pred.relationships.trip.data.id);
+                  break;
                 }
-                continue;
               }
             }
           }
         }
+
+        let shouldShow = false;
+        for(let i = 0; i < predictionsNow.length; i++){
+          for(let j = 0; j < predictionsNow[i].destinations.length; j++){
+            if(predictionsNow[i].destinations[j].times.length !== 0){
+              shouldShow = true;
+            }
+          }
+          predictionsNow[i].show = shouldShow;
+          shouldShow = false;
+        }
+        
         
       }
 
