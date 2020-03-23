@@ -10,7 +10,6 @@ export default ({ route, navigation }) => {
   const { lineMutedColor } = route.params;
   const { lineHighlightedMutedColor } = route.params;
 
-
   //Variables for each line
   const [directions, setDirections] = useState(["a", "b"]);
   const [selectedDirection, setSelectedDirection] = useState("");
@@ -56,10 +55,14 @@ export default ({ route, navigation }) => {
         setDestinations(branchesText);
         let apiBranches = [];
         for (const dest of branchesText) {
-          if ((dest.indexOf("/") != -1 || dest.indexOf(" or ") != -1) && dest.indexOf("Forge Park/495") === -1 && dest.indexOf("Middleborough/Lakeville") === -1) {
+          if (
+            (dest.indexOf("/") != -1 || dest.indexOf(" or ") != -1) &&
+            dest.indexOf("Forge Park/495") === -1 &&
+            dest.indexOf("Middleborough/Lakeville") === -1
+          ) {
             //Branches are split by '/' character
             apiBranches = dest.split("/");
-            if(apiBranches.length === 1){
+            if (apiBranches.length === 1) {
               apiBranches = dest.split(" or ");
             }
           }
@@ -73,10 +76,9 @@ export default ({ route, navigation }) => {
     let terminus1, terminus2;
     let terminiNow = [];
     if (branches.length > 1) {
-      
       if (
         (destinations[0].indexOf("/") != -1 ||
-        destinations[0].indexOf(" or ") != -1) &&
+          destinations[0].indexOf(" or ") != -1) &&
         destinations[0].indexOf(selectedBranch) != -1
       ) {
         terminus1 = selectedBranch;
@@ -116,29 +118,41 @@ export default ({ route, navigation }) => {
         for (const shape of data?.data) {
           let shapeRouteName = shape?.attributes?.name;
           const indexOfVia = shapeRouteName.indexOf("via");
-          if(indexOfVia !== -1){
-            shapeRouteName = shapeRouteName.substr(0, indexOfVia - 1)
+          if (indexOfVia !== -1) {
+            shapeRouteName = shapeRouteName.substr(0, indexOfVia - 1);
           }
 
-          if ((shapeRouteName.indexOf(routeStr.replace("Avenue", "Ave").replace(" or Foxboro","").replace("Kingston or ","")) !== -1 || 
-               shapeRouteName.indexOf(routeStr.replace("Avenue", "Ave").replace("Fairmount", "Readville").replace(" or Foxboro","")) !== -1) && 
-               shape?.attributes?.priority > 0) {
+          if (
+            (shapeRouteName.indexOf(
+              routeStr
+                .replace("Avenue", "Ave")
+                .replace(" or Foxboro", "")
+                .replace("Kingston or ", "")
+            ) !== -1 ||
+              shapeRouteName.indexOf(
+                routeStr
+                  .replace("Avenue", "Ave")
+                  .replace("Fairmount", "Readville")
+                  .replace(" or Foxboro", "")
+              ) !== -1) &&
+            shape?.attributes?.priority > 0
+          ) {
             setStations(shape?.relationships?.stops?.data);
             updatedStations = true;
           }
         }
 
-        if(!updatedStations){
+        if (!updatedStations) {
           for (const shape of data?.data) {
             let shapeRouteName = shape?.attributes?.name;
             const indexOfVia = shapeRouteName.indexOf("via");
-            if(indexOfVia !== -1){
-              shapeRouteName = shapeRouteName.substr(0, indexOfVia - 1)
+            if (indexOfVia !== -1) {
+              shapeRouteName = shapeRouteName.substr(0, indexOfVia - 1);
             }
-  
+
             let firstPartFromAPI = shapeRouteName.split(" - ")[0];
             let firstPartFromSelection = routeStr.split(" - ")[0];
-  
+
             if (firstPartFromAPI === firstPartFromSelection) {
               setStations(shape?.relationships?.stops?.data);
               updatedStations = true;
@@ -146,17 +160,17 @@ export default ({ route, navigation }) => {
           }
         }
 
-        if(!updatedStations){
+        if (!updatedStations) {
           for (const shape of data?.data) {
             let shapeRouteName = shape?.attributes?.name;
             const indexOfVia = shapeRouteName.indexOf("via");
-            if(indexOfVia !== -1){
-              shapeRouteName = shapeRouteName.substr(0, indexOfVia - 1)
+            if (indexOfVia !== -1) {
+              shapeRouteName = shapeRouteName.substr(0, indexOfVia - 1);
             }
-  
+
             let lastPartFromAPI = shapeRouteName.split(" - ")[1];
             let lastPartFromSelection = routeStr.split(" - ")[1];
-  
+
             if (lastPartFromAPI === lastPartFromSelection) {
               setStations(shape?.relationships?.stops?.data);
               updatedStations = true;
@@ -166,9 +180,9 @@ export default ({ route, navigation }) => {
       });
   }, [termini]);
 
-  function getStaNameFromId(id) {
+  function getStaNameFromId(s) {
     for (const sta of stationInfo) {
-      if (sta.id === id) {
+      if (sta.id === s.id) {
         return sta.name;
       }
     }
@@ -195,7 +209,7 @@ export default ({ route, navigation }) => {
         selectedValue={selectedDirection}
         changeSelectedValue={setSelectedDirection}
       />
-      {(branches.length == 2) ? (
+      {branches.length == 2 ? (
         <>
           <Text style={subHeaderStyles}>Branch</Text>
           <SlideSelector
@@ -207,23 +221,29 @@ export default ({ route, navigation }) => {
           />
           <View style={{ height: 10 }} />
         </>
-      ) : (<></>)}
-      
+      ) : (
+        <></>
+      )}
+
       <Text style={headerStyles}>Station Stops</Text>
       {stations.map(s => {
-        return (
-          <StationButton
-            key={s.id}
-            color={lineMutedColor}
-            text={getStaNameFromId(s.id)}
-            whenPressed={() => navigation.navigate("Station Screen", {
-              stationName: getStaNameFromId(s.id),
-              stationId: s.id,
-              lineColor: route.params.lineColor,
-              menuTitle: lineFullName
-            })}
-          />
-        );
+        if (getStaNameFromId(s) !== "NO NAME") {
+          return (
+            <StationButton
+              key={s.id}
+              color={lineMutedColor}
+              text={getStaNameFromId(s)}
+              whenPressed={() =>
+                navigation.navigate("Station Screen", {
+                  stationName: getStaNameFromId(s),
+                  stationId: s.id,
+                  lineColor: route.params.lineColor,
+                  menuTitle: lineFullName
+                })
+              }
+            />
+          );
+        }
       })}
       <View style={{ height: 50 }} />
     </ScrollView>

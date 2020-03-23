@@ -11,6 +11,8 @@ export default ({ color, text, image, whenPressed, textColor }) => {
         minHeight: 85,
         marginTop: 20,
         paddingRight: 18,
+        paddingTop: 10,
+        paddingBottom: 10
       }}
       onPress={() => whenPressed()}
     >
@@ -48,7 +50,8 @@ export default ({ color, text, image, whenPressed, textColor }) => {
           style={{
             fontSize: 36,
             fontWeight: "900",
-            color: (textColor || "black")
+            width: (image) ? "80%" : "95%",
+            color: (textColor || "black"),
           }}
         >
           {text}
