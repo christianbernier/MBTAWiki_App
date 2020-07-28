@@ -9,6 +9,7 @@ export default ({ route, navigation }) => {
   const { lineFullName } = route.params;
   const { lineMutedColor } = route.params;
   const { lineHighlightedMutedColor } = route.params;
+  const { darkMode } = route.params;
 
   //Variables for each line
   const [directions, setDirections] = useState(["a", "b"]);
@@ -117,7 +118,9 @@ export default ({ route, navigation }) => {
 
   useEffect(() => {
     let routeStr = `${termini[0]} - ${termini[1]}`;
-    fetch(`https://api-v3.mbta.com/route_patterns?filter%5Broute%5D=${line}&api_key=e9cca8f8775749b9b79e4bed57f6216c`)
+    fetch(
+      `https://api-v3.mbta.com/route_patterns?filter%5Broute%5D=${line}&api_key=e9cca8f8775749b9b79e4bed57f6216c`
+    )
       .then((data) => data.json())
       .then((data) => {
         for (const pattern of data.data) {
@@ -183,35 +186,43 @@ export default ({ route, navigation }) => {
 
   useEffect(() => {
     if (routePatternId) {
-      fetch(`https://api-v3.mbta.com/route_patterns/${routePatternId}?include=representative_trip.stops&api_key=e9cca8f8775749b9b79e4bed57f6216c`)
-      .then(data => data.json())
-      .then(data => {
-        let newStations = [];
-        for(const info of data.included){
-          if(info.type === "trip"){
-            for(const sta of info.relationships.stops.data){
-              newStations.push(sta.id);
+      fetch(
+        `https://api-v3.mbta.com/route_patterns/${routePatternId}?include=representative_trip.stops&api_key=e9cca8f8775749b9b79e4bed57f6216c`
+      )
+        .then((data) => data.json())
+        .then((data) => {
+          let newStations = [];
+          for (const info of data.included) {
+            if (info.type === "trip") {
+              for (const sta of info.relationships.stops.data) {
+                newStations.push(sta.id);
+              }
             }
           }
-        }
-        setSubStations(newStations);
-      })
+          setSubStations(newStations);
+        });
     }
   }, [routePatternId]);
 
   useEffect(() => {
-    async function getData(){
-      if(subStations){
+    async function getData() {
+      if (subStations) {
         let currentSubStations = JSON.parse(JSON.stringify(subStations));
         let newStations = currentSubStations;
-        for(let subSta of currentSubStations){
-          await fetch(`https://api-v3.mbta.com/stops/${subSta.replace("/","%2F")}?api_key=e9cca8f8775749b9b79e4bed57f6216c`)
-          .then(data=>data.json())
-          .then(data=>{
-            if(data?.data?.relationships?.parent_station?.data?.id){
-              newStations[currentSubStations.indexOf(subSta)] = data.data.relationships.parent_station.data.id;
-            }
-          })
+        for (let subSta of currentSubStations) {
+          await fetch(
+            `https://api-v3.mbta.com/stops/${subSta.replace(
+              "/",
+              "%2F"
+            )}?api_key=e9cca8f8775749b9b79e4bed57f6216c`
+          )
+            .then((data) => data.json())
+            .then((data) => {
+              if (data?.data?.relationships?.parent_station?.data?.id) {
+                newStations[currentSubStations.indexOf(subSta)] =
+                  data.data.relationships.parent_station.data.id;
+              }
+            });
         }
         setStations(newStations);
       }
@@ -233,15 +244,31 @@ export default ({ route, navigation }) => {
     <ScrollView
       style={{
         height: "100%",
-        backgroundColor: "#F7FAFC",
+        backgroundColor: darkMode ? "#1A202C" : "#F7FAFC",
         paddingLeft: 20,
         paddingRight: 20,
-        paddingTop: 15
+        paddingTop: 15,
       }}
     >
-      <Text style={headerStyles}>{lineFullName}</Text>
+      <Text
+        style={{
+          fontSize: 48,
+          fontWeight: "900",
+          color: (darkMode) ? "#F7FAFC" : "#1A202C"
+        }}
+      >
+        {lineFullName}
+      </Text>
       <View style={{ height: 10 }} />
-      <Text style={subHeaderStyles}>Direction</Text>
+      <Text
+        style={{
+          fontSize: 32,
+          fontWeight: "900",
+          color: (darkMode) ? "#F7FAFC" : "#1A202C"
+        }}
+      >
+        Direction
+      </Text>
       <SlideSelector
         bgColor={lineMutedColor}
         hlColor={lineHighlightedMutedColor}
@@ -251,7 +278,15 @@ export default ({ route, navigation }) => {
       />
       {branches.length == 2 ? (
         <>
-          <Text style={subHeaderStyles}>Branch</Text>
+          <Text
+            style={{
+              fontSize: 32,
+              fontWeight: "900",
+              color: (darkMode) ? "#F7FAFC" : "#1A202C"
+            }}
+          >
+            Branch
+          </Text>
           <SlideSelector
             bgColor={lineMutedColor}
             hlColor={lineHighlightedMutedColor}
@@ -265,8 +300,16 @@ export default ({ route, navigation }) => {
         <></>
       )}
 
-      <Text style={headerStyles}>Station Stops</Text>
-      {stations.map(s => {
+      <Text
+        style={{
+          fontSize: 48,
+          fontWeight: "900",
+          color: (darkMode) ? "#F7FAFC" : "#1A202C"
+        }}
+      >
+        Station Stops
+      </Text>
+      {stations.map((s) => {
         if (getStaNameFromId(s) !== "NO NAME") {
           return (
             <StationButton
@@ -278,7 +321,9 @@ export default ({ route, navigation }) => {
                   stationName: getStaNameFromId(s),
                   stationId: s,
                   lineColor: route.params.lineColor,
-                  menuTitle: lineFullName
+                  lineMutedColor: route.params.lineMutedColor,
+                  menuTitle: lineFullName,
+                  darkMode: darkMode
                 })
               }
             />
@@ -288,16 +333,4 @@ export default ({ route, navigation }) => {
       <View style={{ height: 50 }} />
     </ScrollView>
   );
-};
-
-const headerStyles = {
-  fontSize: 48,
-  fontWeight: "900",
-  color: "#1A202C"
-};
-
-const subHeaderStyles = {
-  fontSize: 32,
-  fontWeight: "900",
-  color: "#1A202C"
 };

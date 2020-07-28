@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 
-export default ({ sta, staFullName }) => {
+export default ({
+  sta,
+  staFullName,
+  lineColor,
+  lineMutedColor,
+  menuTitle,
+  navigation,
+  darkMode,
+}) => {
   const [predictions, setPredictions] = useState([
     {
       line: "No predictions",
@@ -12,10 +20,10 @@ export default ({ sta, staFullName }) => {
         {
           destination: "",
           times: [],
-          tripIDs: []
-        }
-      ]
-    }
+          tripIDs: [],
+        },
+      ],
+    },
   ]);
 
   const [rawPredictions, setRawPredictions] = useState([]);
@@ -26,23 +34,23 @@ export default ({ sta, staFullName }) => {
   let tripsAdded = [];
 
   useEffect(() => {
-    if(predictions.length > 1){
+    if (predictions.length > 1) {
       setPredictions([
         {
           line: "No predictions",
           displayLine: "No predictions",
           lineColor: "transparent",
           show: true,
-          destinations: []
-        }
+          destinations: [],
+        },
       ]);
     }
 
     fetch(
       `https://api-v3.mbta.com/predictions?filter[stop]=${sta}&sort=time&api_key=e9cca8f8775749b9b79e4bed57f6216c`
     )
-      .then(data => data.json())
-      .then(data => setRawPredictions(data?.data));
+      .then((data) => data.json())
+      .then((data) => setRawPredictions(data?.data));
   }, []);
 
   useEffect(() => {
@@ -59,19 +67,21 @@ export default ({ sta, staFullName }) => {
       if (!routeAdded) {
         let lineColor;
 
-        if(route.indexOf("CR-") !== -1){
+        if (route.indexOf("CR-") !== -1) {
           lineColor = "#80276C";
-        } else if(route === "Red" || route === "Mattapan"){
+        } else if (route === "Red" || route === "Mattapan") {
           lineColor = "#DA291C";
-        } else if(route === "Orange"){
+        } else if (route === "Orange") {
           lineColor = "#ED8B00";
-        } else if(route === "Blue"){
+        } else if (route === "Blue") {
           lineColor = "#003DA5";
-        } else if(route.indexOf("Green-") !== -1){
+        } else if (route.indexOf("Green-") !== -1) {
           lineColor = "#00843D";
-        } else if(["741", "742", "743", "751", "749", "746"].indexOf(route) !== -1){
+        } else if (
+          ["741", "742", "743", "751", "749", "746"].indexOf(route) !== -1
+        ) {
           lineColor = "#7C878E";
-        } else{
+        } else {
           lineColor = "#FFC72C";
         }
 
@@ -80,7 +90,7 @@ export default ({ sta, staFullName }) => {
           displayLine: "",
           show: true,
           lineColor: lineColor,
-          destinations: []
+          destinations: [],
         });
       }
     }
@@ -96,22 +106,24 @@ export default ({ sta, staFullName }) => {
   }, [rawPredictions]);
 
   useEffect(() => {
-    if(routesAdded){
+    if (routesAdded) {
       let predictionsNow = JSON.parse(JSON.stringify(predictions));
-      for(const pred of predictionsNow){
-        if(pred.line){
-          fetch(`https://api-v3.mbta.com/routes/${pred.line}?api_key=e9cca8f8775749b9b79e4bed57f6216c`)
-          .then(data => data.json())
-          .then(data => {
-            if(data.data.attributes.short_name){
-              pred.displayLine = data.data.attributes.short_name;
-              if(["B", "C", "D", "E"].indexOf(pred.displayLine) !== -1){
-                pred.displayLine = `Green Line ${pred.displayLine} Branch`;
+      for (const pred of predictionsNow) {
+        if (pred.line) {
+          fetch(
+            `https://api-v3.mbta.com/routes/${pred.line}?api_key=e9cca8f8775749b9b79e4bed57f6216c`
+          )
+            .then((data) => data.json())
+            .then((data) => {
+              if (data.data.attributes.short_name) {
+                pred.displayLine = data.data.attributes.short_name;
+                if (["B", "C", "D", "E"].indexOf(pred.displayLine) !== -1) {
+                  pred.displayLine = `Green Line ${pred.displayLine} Branch`;
+                }
+              } else {
+                pred.displayLine = data.data.attributes.long_name;
               }
-            } else{
-              pred.displayLine = data.data.attributes.long_name;
-            }
-          })
+            });
         }
       }
       setPredictions([]);
@@ -129,107 +141,127 @@ export default ({ sta, staFullName }) => {
         fetch(
           `https://api-v3.mbta.com/trips/${pred.relationships.trip.data.id}?api_key=e9cca8f8775749b9b79e4bed57f6216c`
         )
-          .then(data => data.json())
-          .then(data => {
-            destination = data?.data?.attributes?.headsign;
-            let destExists = false;
-            for (const prediction of predictionsNow) {
-              if (prediction.line === route) {
-                for (const dest of prediction.destinations) {
-                  if (dest.destination === destination) {
-                    destExists = true;
-                  }
-                }
-              }
-            }
-            if (!destExists && destination.indexOf(staFullName) === -1) {
-              for (let i = 0; i < predictionsNow.length; i++) {
-                if (predictionsNow[i].line === route) {
-                  predictionsNow[i].destinations.push({
-                    destination: destination,
-                    times: [],
-                    tripIDs: []
-                  });
-                }
-              }
-            }
-            if(destination.indexOf(staFullName) === -1){
-              for (let i = 0; i < predictionsNow.length; i++) {
-                if (predictionsNow[i].line === route) {
-                  for(let j = 0; j < predictionsNow[i].destinations.length; j++){
-                    if(destination === predictionsNow[i].destinations[j].destination){
-                      predictionsNow[i].destinations[j].tripIDs.push(pred.relationships.trip.data.id);
+          .then((data) => data.json())
+          .then((data) => {
+            if (!data.errors) {
+              destination = data?.data?.attributes?.headsign;
+              let destExists = false;
+              for (const prediction of predictionsNow) {
+                if (prediction.line === route) {
+                  for (const dest of prediction.destinations) {
+                    if (dest.destination === destination) {
+                      destExists = true;
                     }
                   }
                 }
               }
-            }
-            if (pred === rawPredictions[rawPredictions.length - 1]) {
-              setPredictions(predictionsNow);
-              setDestsAdded(true);
+              if (!destExists && destination.indexOf(staFullName) === -1) {
+                for (let i = 0; i < predictionsNow.length; i++) {
+                  if (predictionsNow[i].line === route) {
+                    predictionsNow[i].destinations.push({
+                      destination: destination,
+                      times: [],
+                      tripIDs: [],
+                    });
+                  }
+                }
+              }
+              if (destination.indexOf(staFullName) === -1) {
+                for (let i = 0; i < predictionsNow.length; i++) {
+                  if (predictionsNow[i].line === route) {
+                    for (
+                      let j = 0;
+                      j < predictionsNow[i].destinations.length;
+                      j++
+                    ) {
+                      if (
+                        destination ===
+                        predictionsNow[i].destinations[j].destination
+                      ) {
+                        predictionsNow[i].destinations[j].tripIDs.push(
+                          pred.relationships.trip.data.id
+                        );
+                      }
+                    }
+                  }
+                }
+              }
+              if (pred === rawPredictions[rawPredictions.length - 1]) {
+                setPredictions(predictionsNow);
+                setDestsAdded(true);
+              }
             }
           });
       }
     }
   }, [dispsAdded]);
 
-  function prettyTime(t, type){
+  function prettyTime(t, type) {
     let time = new Date(t);
     let now = new Date();
     let secondsUntil = (time - now) / 1000;
 
-    if(type === "a" && secondsUntil < 45){
+    if (type === "a" && secondsUntil < 45) {
       return "Arriving";
-    } else if(type === "d" && secondsUntil < 30){
+    } else if (type === "d" && secondsUntil < 30) {
       return "Boarding";
     }
 
-    let minutesUntil = parseInt((secondsUntil / 60) + 0.5);
+    let minutesUntil = parseInt(secondsUntil / 60 + 0.5);
 
-    if(minutesUntil < 60){
-      return (minutesUntil + " min");
+    if (minutesUntil < 60) {
+      return minutesUntil + " min";
     }
 
     let hoursUntil = parseInt(minutesUntil / 60);
     minutesUntil %= 60;
 
-    let returnStr = `${hoursUntil} hour${(hoursUntil === 1) ? "" : "s"}`;
-    if(minutesUntil != 0){
+    let returnStr = `${hoursUntil} hour${hoursUntil === 1 ? "" : "s"}`;
+    if (minutesUntil != 0) {
       returnStr += ", " + minutesUntil + " min";
     }
 
     return returnStr;
-
   }
 
   useEffect(() => {
-    if(destsAdded){
+    if (destsAdded) {
       let predictionsNow = JSON.parse(JSON.stringify(predictions));
 
-      for(const pred of rawPredictions){
+      for (const pred of rawPredictions) {
         let time = null;
         const arrivalTime = pred?.attributes?.arrival_time;
         const departureTime = pred?.attributes?.departure_time;
         const status = pred?.attributes?.status;
 
-        if(status && status != null){
+        if (status && status != null) {
           time = status;
-        } else if(arrivalTime && departureTime){
+        } else if (arrivalTime && departureTime) {
           time = prettyTime(arrivalTime, "a");
-        } else if(departureTime && !arrivalTime){
+        } else if (departureTime && !arrivalTime) {
           time = prettyTime(departureTime, "d");
         }
 
-        if(time === null){
+        if (time === null) {
           continue;
         }
 
-
-        for(let i = 0; i < predictionsNow.length; i++){
-          for(let j = 0; j < predictionsNow[i].destinations.length; j++){
-            for(let k = 0; k < predictionsNow[i].destinations[j].tripIDs.length; k++){
-              if(predictionsNow[i].destinations[j].tripIDs[k] === pred.relationships.trip.data.id){
-                if(predictionsNow[i].destinations[j].times.indexOf(time) === -1 && tripsAdded.indexOf(pred.relationships.trip.data.id) === -1){
+        for (let i = 0; i < predictionsNow.length; i++) {
+          for (let j = 0; j < predictionsNow[i].destinations.length; j++) {
+            for (
+              let k = 0;
+              k < predictionsNow[i].destinations[j].tripIDs.length;
+              k++
+            ) {
+              if (
+                predictionsNow[i].destinations[j].tripIDs[k] ===
+                pred.relationships.trip.data.id
+              ) {
+                if (
+                  predictionsNow[i].destinations[j].times.indexOf(time) ===
+                    -1 &&
+                  tripsAdded.indexOf(pred.relationships.trip.data.id) === -1
+                ) {
                   predictionsNow[i].destinations[j].times.push(time);
                   tripsAdded.push(pred.relationships.trip.data.id);
                   break;
@@ -240,17 +272,15 @@ export default ({ sta, staFullName }) => {
         }
 
         let shouldShow = false;
-        for(let i = 0; i < predictionsNow.length; i++){
-          for(let j = 0; j < predictionsNow[i].destinations.length; j++){
-            if(predictionsNow[i].destinations[j].times.length !== 0){
+        for (let i = 0; i < predictionsNow.length; i++) {
+          for (let j = 0; j < predictionsNow[i].destinations.length; j++) {
+            if (predictionsNow[i].destinations[j].times.length !== 0) {
               shouldShow = true;
             }
           }
           predictionsNow[i].show = shouldShow;
           shouldShow = false;
         }
-        
-        
       }
 
       setPredictions(predictionsNow);
@@ -260,35 +290,36 @@ export default ({ sta, staFullName }) => {
   return (
     <View
       style={{
-        minHeight: 40
+        minHeight: 40,
       }}
     >
-      {predictions.map(e => {
+      {predictions.map((e) => {
         return (
           <View
             key={e.line}
             style={{
               width: "100%",
-              display: (e.show && e.destinations.length > 0) ? "" : "none"
+              display: e.show && e.destinations.length > 0 ? "" : "none",
             }}
           >
             <View
               style={{
                 borderBottomColor: e.lineColor,
                 borderBottomWidth: 3,
-                paddingTop: 10
+                paddingTop: 10,
               }}
             >
               <Text
                 style={{
                   fontSize: 22,
-                  fontWeight: "700"
+                  fontWeight: "700",
+                  color: darkMode ? "#F7FAFC" : "#1A202C",
                 }}
               >
-                {(e.destinations.length > 0) ? e.displayLine : ""}
+                {e.destinations.length > 0 ? e.displayLine : ""}
               </Text>
             </View>
-            {e.destinations.map(d => {
+            {e.destinations.map((d) => {
               return (
                 <View
                   key={d.destination}
@@ -296,46 +327,66 @@ export default ({ sta, staFullName }) => {
                     width: "100%",
                     marginTop: 5,
                     flex: 1,
-                    flexDirection: "row"
+                    flexDirection: "row",
                   }}
                 >
-                  <View
+                  <TouchableOpacity
                     style={{
-                      width: "50%",
-                      minHeight: 20
+                      width: "200%"
                     }}
+                    onPress={() => navigation.navigate("Prediction Screen", {
+                      predictionTitle: "Prediction",
+                      lineColor: lineColor,
+                      lineMutedColor: lineMutedColor,
+                      menuTitle: d.destination,
+                      lineName: e.displayLine,
+                      destinationName: d.destination,
+                      nextTripID: d.tripIDs[0],
+                      darkMode: darkMode
+                    })}
                   >
-                    <Text
+                    <View
                       style={{
-                        fontSize: 18,
-                        fontWeight: "700"
+                        width: "50%",
+                        minHeight: 20,
                       }}
                     >
-                      {d.destination}
-                    </Text>
-                  </View>
-                  <View
-                    style={{
-                      width: "50%",
-                      minHeight: 20
-                    }}
-                  >
-                    {d.times.map(t => {
-                      return (
-                        <View key={d.destination + "-" + t + "-" + Math.random()}>
-                          <Text
-                            style={{
-                              textAlign: "right",
-                              fontSize: 18,
-                              fontWeight: t === d.times[0] ? "700" : "400"
-                            }}
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          fontWeight: "700",
+                          color: darkMode ? "#F7FAFC" : "#1A202C",
+                        }}
+                      >
+                        {d.destination}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        width: "50%",
+                        minHeight: 20,
+                      }}
+                    >
+                      {d.times.map((t) => {
+                        return (
+                          <View
+                            key={d.destination + "-" + t + "-" + Math.random()}
                           >
-                            {t}
-                          </Text>
-                        </View>
-                      );
-                    })}
-                  </View>
+                            <Text
+                              style={{
+                                textAlign: "right",
+                                fontSize: 18,
+                                fontWeight: t === d.times[0] ? "700" : "400",
+                                color: darkMode ? "#F7FAFC" : "#1A202C",
+                              }}
+                            >
+                              {t}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </TouchableOpacity>
                 </View>
               );
             })}

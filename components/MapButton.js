@@ -7,8 +7,12 @@ export default ({ lat, lon, color }) => {
       style={{
         backgroundColor: color,
         borderRadius: 15,
-        height: 50,
-        marginTop: 10
+        minHeight: 65,
+        marginTop: 10,
+        paddingLeft: 18,
+        paddingRight: 18,
+        paddingTop: 10,
+        paddingBottom: 10
       }}
       onPress={() => Linking.openURL(`https://maps.apple.com/?ll=${lat},${lon}&z=18`)}
     >
@@ -23,7 +27,7 @@ export default ({ lat, lon, color }) => {
       >
         <Text
           style={{
-            fontSize: 28,
+            fontSize: 36,
             fontWeight: "900",
             color: "#F7FAFC"
           }}

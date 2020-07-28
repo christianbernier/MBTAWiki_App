@@ -7,7 +7,9 @@ import LineMenu from "./LineMenu.js";
 import StationScreen from "./StationScreen.js";
 import MultiLineMenu from "./MultiLineMenu.js";
 import BusMenu from "./BusMenu.js";
-import MoreMenu from "./MoreMenu.js";
+import FavoritesMenu from "./FavoritesMenu.js";
+import PredictionScreen from "./PredictionScreen.js";
+import AboutScreen from "./AboutScreen.js";
 
 const Stack = createStackNavigator();
 
@@ -86,11 +88,11 @@ export default function App() {
           }
         />
         <Stack.Screen
-          name="More Menu"
-          component={MoreMenu}
+          name="Favorites Menu"
+          component={FavoritesMenu}
           options={
             ({ route }) => ({ 
-              title: "More Menu",
+              title: "My Favorites",
               headerStyle: {
                 backgroundColor: "#4A5568"
               },
@@ -120,6 +122,42 @@ export default function App() {
               headerBackTitle: route.params.menuTitle
             })
             
+          }
+        />
+        <Stack.Screen
+          name="Prediction Screen"
+          component={PredictionScreen}
+          options={
+            ({ route }) => ({ 
+              title: route.params.predictionTitle,
+              headerStyle: {
+                backgroundColor: route.params.lineColor
+              },
+              headerTitleStyle: {
+                fontSize: 21,
+                color: "#F7FAFC"
+              },
+              headerTintColor: "#F7FAFC",
+              headerBackTitle: route.params.menuTitle
+            })
+          }
+        />
+        <Stack.Screen
+          name="About Screen"
+          component={AboutScreen}
+          options={
+            ({ route }) => ({ 
+              title: "About",
+              headerStyle: {
+                backgroundColor: "#2D3748"
+              },
+              headerTitleStyle: {
+                fontSize: 21,
+                color: "#F7FAFC"
+              },
+              headerTintColor: "#F7FAFC",
+              headerBackTitle: "Home"
+            })
           }
         />
       </Stack.Navigator>

@@ -4,6 +4,8 @@ import LineButton from "./components/LineButton.js";
 import SearchBar from "./components/SearchBar.js";
 
 export default ({ route, navigation }) => {
+  const {darkMode} = route.params;
+
   const [busRoutes, setBusRoutes] = useState(["1", "2", "3"]);
   const [query, setQuery] = useState("");
 
@@ -41,7 +43,7 @@ export default ({ route, navigation }) => {
     <ScrollView
       style={{
         height: "100%",
-        backgroundColor: "#F7FAFC",
+        backgroundColor: darkMode ? "#1A202C" : "#F7FAFC",
         paddingLeft: 20,
         paddingRight: 20,
         paddingTop: 15
@@ -67,7 +69,8 @@ export default ({ route, navigation }) => {
                   lineFullName: betterName(r),
                   lineColor: "#FFC72C",
                   lineMutedColor: "#FFEAB6",
-                  lineHighlightedMutedColor: "#F9CA51"
+                  lineHighlightedMutedColor: "#F9CA51",
+                  darkMode: darkMode
                 })
               }
             />
