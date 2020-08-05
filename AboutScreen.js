@@ -31,7 +31,7 @@ export default ({ route, navigation }) => {
           color: darkMode ? "#F7FAFC" : "#1A202C",
         }}
       >
-        Version 0.2.0
+        Version 0.2.1
       </Text>
       <Text
         style={{

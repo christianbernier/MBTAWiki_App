@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import SlideSelector from "./components/SlideSelector.js";
 import StationButton from "./components/StationButton.js";
+import LineAlerts from "./components/LineAlerts.js";
 
 export default ({ route, navigation }) => {
   //Parameters
@@ -254,7 +255,7 @@ export default ({ route, navigation }) => {
         style={{
           fontSize: 48,
           fontWeight: "900",
-          color: (darkMode) ? "#F7FAFC" : "#1A202C"
+          color: darkMode ? "#F7FAFC" : "#1A202C",
         }}
       >
         {lineFullName}
@@ -264,7 +265,7 @@ export default ({ route, navigation }) => {
         style={{
           fontSize: 32,
           fontWeight: "900",
-          color: (darkMode) ? "#F7FAFC" : "#1A202C"
+          color: darkMode ? "#F7FAFC" : "#1A202C",
         }}
       >
         Direction
@@ -282,7 +283,7 @@ export default ({ route, navigation }) => {
             style={{
               fontSize: 32,
               fontWeight: "900",
-              color: (darkMode) ? "#F7FAFC" : "#1A202C"
+              color: darkMode ? "#F7FAFC" : "#1A202C",
             }}
           >
             Branch
@@ -304,7 +305,7 @@ export default ({ route, navigation }) => {
         style={{
           fontSize: 48,
           fontWeight: "900",
-          color: (darkMode) ? "#F7FAFC" : "#1A202C"
+          color: darkMode ? "#F7FAFC" : "#1A202C",
         }}
       >
         Station Stops
@@ -323,13 +324,30 @@ export default ({ route, navigation }) => {
                   lineColor: route.params.lineColor,
                   lineMutedColor: route.params.lineMutedColor,
                   menuTitle: lineFullName,
-                  darkMode: darkMode
+                  darkMode: darkMode,
                 })
               }
             />
           );
         }
       })}
+
+      <View style={{ height: 30 }} />
+      <Text
+        style={{
+          fontSize: 48,
+          fontWeight: "900",
+          color: darkMode ? "#F7FAFC" : "#1A202C",
+        }}
+      >
+        Line Alerts
+      </Text>
+      <LineAlerts
+        line={line}
+        lineMutedColor={lineMutedColor}
+        lineLinkColor={lineHighlightedMutedColor}
+        darkMode={darkMode}
+      />
       <View style={{ height: 50 }} />
     </ScrollView>
   );

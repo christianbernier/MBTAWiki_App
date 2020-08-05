@@ -9,7 +9,7 @@
       "android",
       "web"
     ],
-    "version": "0.2.0",
+    "version": "0.2.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -25,7 +25,7 @@
     ],
     "ios": {
       "bundleIdentifier": "com.christianbernier.mbtawiki",
-      "buildNumber": "0.2.0"
+      "buildNumber": "0.2.1"
     }
   }
 }
