@@ -266,7 +266,7 @@ export default ({ navigation }) => {
               color: "#A0AEC0",
             }}
           >
-            MBTA Wiki App v.0.2.1 — Created by Christian Bernier ©2020
+            MBTA Wiki App v.0.2.2 — Created by Christian Bernier ©2020
           </Text>
         </TouchableOpacity>
       </View>

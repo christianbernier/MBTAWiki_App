@@ -8,6 +8,7 @@ export default ({ bgColor, hlColor, values, selectedValue, changeSelectedValue }
         backgroundColor: bgColor,
         width: "auto",
         height: 35,
+        minHeight: 35,
         borderRadius: 10,
         flexDirection: "row",
         justifyContent: "space-around",
@@ -23,6 +24,8 @@ export default ({ bgColor, hlColor, values, selectedValue, changeSelectedValue }
               backgroundColor: (v === selectedValue) ? hlColor : bgColor,
               width: "50%",
               height: "100%",
+              paddingTop: 5,
+              paddingBottom: 5,
               justifyContent: "center",
               borderRadius: 10,
               alignItems: "center",
@@ -33,8 +36,9 @@ export default ({ bgColor, hlColor, values, selectedValue, changeSelectedValue }
               style={{
                 fontSize: 22,
                 fontWeight: "800",
+                color: "#1A202C"
               }}
-            >{(v === "Wickford Junction") ? "Providence" : v}</Text>
+            >{v}</Text>
           </TouchableOpacity>
         );
       })}

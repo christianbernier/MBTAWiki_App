@@ -6,7 +6,7 @@ import SearchBar from "./components/SearchBar.js";
 export default ({ route, navigation }) => {
   const {darkMode} = route.params;
 
-  const [busRoutes, setBusRoutes] = useState(["1", "2", "3"]);
+  const [busRoutes, setBusRoutes] = useState([]);
   const [query, setQuery] = useState("");
 
   useEffect(() => {

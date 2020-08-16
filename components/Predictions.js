@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
+import MiniImage from "./MiniImage";
 
 export default ({
   sta,
@@ -13,6 +14,7 @@ export default ({
   const [predictions, setPredictions] = useState([
     {
       line: "No predictions",
+      type: "",
       displayLine: "No predictions",
       lineColor: "transparent",
       show: true,
@@ -20,7 +22,9 @@ export default ({
         {
           destination: "",
           times: [],
+          timesTypes: [],
           tripIDs: [],
+          capacities: [],
         },
       ],
     },
@@ -30,6 +34,14 @@ export default ({
   const [routesAdded, setRoutesAdded] = useState(false);
   const [destsAdded, setDestsAdded] = useState(false);
   const [dispsAdded, setDispsAdded] = useState(false);
+  const [addCapacities, setAddCapacities] = useState(false);
+  const [updateTimes, setUpdateTimes] = useState(0);
+
+  useEffect(() => {
+    setInterval(() => {
+      setUpdateTimes(Math.random())
+    }, 1000);
+  }, []);
 
   let tripsAdded = [];
 
@@ -38,6 +50,7 @@ export default ({
       setPredictions([
         {
           line: "No predictions",
+          type: "",
           displayLine: "No predictions",
           lineColor: "transparent",
           show: true,
@@ -65,28 +78,39 @@ export default ({
       }
 
       if (!routeAdded) {
-        let lineColor;
+        let lineColor, type;
 
         if (route.indexOf("CR-") !== -1) {
           lineColor = "#80276C";
-        } else if (route === "Red" || route === "Mattapan") {
+          type = "cr";
+        } else if (route === "Red") {
           lineColor = "#DA291C";
+          type = "red";
+        } else if (route == "Mattapan") {
+          lineColor = "#DA291C";
+          type = "mattapan";
         } else if (route === "Orange") {
           lineColor = "#ED8B00";
+          type = "orange";
         } else if (route === "Blue") {
           lineColor = "#003DA5";
+          type = "blue";
         } else if (route.indexOf("Green-") !== -1) {
           lineColor = "#00843D";
+          type = "green";
         } else if (
           ["741", "742", "743", "751", "749", "746"].indexOf(route) !== -1
         ) {
           lineColor = "#7C878E";
+          type = "silver";
         } else {
           lineColor = "#FFC72C";
+          type = "bus";
         }
 
         predictionsNow.push({
           line: route,
+          type: type,
           displayLine: "",
           show: true,
           lineColor: lineColor,
@@ -106,30 +130,42 @@ export default ({
   }, [rawPredictions]);
 
   useEffect(() => {
-    if (routesAdded) {
-      let predictionsNow = JSON.parse(JSON.stringify(predictions));
-      for (const pred of predictionsNow) {
-        if (pred.line) {
-          fetch(
-            `https://api-v3.mbta.com/routes/${pred.line}?api_key=e9cca8f8775749b9b79e4bed57f6216c`
-          )
-            .then((data) => data.json())
-            .then((data) => {
-              if (data.data.attributes.short_name) {
-                pred.displayLine = data.data.attributes.short_name;
-                if (["B", "C", "D", "E"].indexOf(pred.displayLine) !== -1) {
-                  pred.displayLine = `Green Line ${pred.displayLine} Branch`;
+    const fetchRouteName = async () => {
+      if (routesAdded) {
+        let predictionsNow = JSON.parse(JSON.stringify(predictions));
+        for (let pred of predictionsNow) {
+          if (pred.line) {
+            await fetch(
+              `https://api-v3.mbta.com/routes/${pred.line}?api_key=e9cca8f8775749b9b79e4bed57f6216c`
+            )
+              .then((data) => data.json())
+              .then((data) => {
+                if (data.data.attributes.short_name) {
+                  if (
+                    data.data.attributes.short_name ==
+                    parseInt(data.data.attributes.short_name)
+                  ) {
+                    pred.displayLine =
+                      "Route " + data.data.attributes.short_name;
+                  } else {
+                    pred.displayLine = data.data.attributes.short_name;
+                    if (["B", "C", "D", "E"].indexOf(pred.displayLine) !== -1) {
+                      pred.displayLine = `Green Line ${pred.displayLine} Branch`;
+                    }
+                  }
+                } else {
+                  pred.displayLine = data.data.attributes.long_name;
                 }
-              } else {
-                pred.displayLine = data.data.attributes.long_name;
-              }
-            });
+              });
+          }
         }
+        setPredictions([]);
+        setPredictions(predictionsNow);
+        setTimeout(() => setDispsAdded(true), 500);
       }
-      setPredictions([]);
-      setPredictions(predictionsNow);
-      setTimeout(() => setDispsAdded(true), 500);
-    }
+    };
+
+    fetchRouteName();
   }, [routesAdded]);
 
   useEffect(() => {
@@ -161,7 +197,9 @@ export default ({
                     predictionsNow[i].destinations.push({
                       destination: destination,
                       times: [],
+                      timesTypes: [],
                       tripIDs: [],
+                      capacities: [],
                     });
                   }
                 }
@@ -181,6 +219,7 @@ export default ({
                         predictionsNow[i].destinations[j].tripIDs.push(
                           pred.relationships.trip.data.id
                         );
+                        predictionsNow[i].destinations[j].capacities.push(0);
                       }
                     }
                   }
@@ -197,6 +236,10 @@ export default ({
   }, [dispsAdded]);
 
   function prettyTime(t, type) {
+    if(type === "s"){
+      return t;
+    }
+
     let time = new Date(t);
     let now = new Date();
     let secondsUntil = (time - now) / 1000;
@@ -230,16 +273,22 @@ export default ({
 
       for (const pred of rawPredictions) {
         let time = null;
+        let timeType = "";
         const arrivalTime = pred?.attributes?.arrival_time;
         const departureTime = pred?.attributes?.departure_time;
         const status = pred?.attributes?.status;
 
         if (status && status != null) {
           time = status;
+          timeType = "s";
         } else if (arrivalTime && departureTime) {
-          time = prettyTime(arrivalTime, "a");
+          // time = prettyTime(arrivalTime, "a");
+          time = arrivalTime;
+          timeType = "a";
         } else if (departureTime && !arrivalTime) {
-          time = prettyTime(departureTime, "d");
+          // time = prettyTime(departureTime, "d");
+          time = departureTime;
+          timeType = "d";
         }
 
         if (time === null) {
@@ -263,6 +312,7 @@ export default ({
                   tripsAdded.indexOf(pred.relationships.trip.data.id) === -1
                 ) {
                   predictionsNow[i].destinations[j].times.push(time);
+                  predictionsNow[i].destinations[j].timesTypes.push(timeType);
                   tripsAdded.push(pred.relationships.trip.data.id);
                   break;
                 }
@@ -284,8 +334,61 @@ export default ({
       }
 
       setPredictions(predictionsNow);
+      setAddCapacities(true);
     }
   }, [destsAdded]);
+
+  useEffect(() => {
+    const getVehicle = async () => {
+      let predictionsNow = JSON.parse(JSON.stringify(predictions));
+      for (let i = 0; i < predictionsNow.length; i++) {
+        for (
+          let j = 0;
+          j < predictionsNow[i].destinations[0].tripIDs.length;
+          j++
+        ) {
+          const thisTripID = predictionsNow[i].destinations[0].tripIDs[j];
+          await fetch(
+            `https://api-v3.mbta.com/vehicles?filter[trip]=${thisTripID}&api_key=e9cca8f8775749b9b79e4bed57f6216c`
+          )
+            .then((data) => data.json())
+            .then((data) => {
+              if (data.data.length > 0) {
+                if (data.data[0].attributes.occupancy_status) {
+                  let crowding = "";
+
+                  switch (data.data[0].attributes.occupancy_status) {
+                    case "MANY_SEATS_AVAILABLE":
+                      crowding = 1;
+                      break;
+                    case "FEW_SEATS_AVAILABLE":
+                      crowding = 2;
+                      break;
+                    case "FULL":
+                      crowding = 3;
+                      break;
+                    default:
+                      crowding = 0;
+                  }
+
+                  predictionsNow[i].destinations[0].capacities[j] = crowding;
+                }
+              }
+            });
+        }
+      }
+      setPredictions(predictionsNow);
+    };
+
+    getVehicle();
+  }, [addCapacities]);
+
+  function fixBusRouteName(route) {
+    if (route == parseInt(route)) {
+      return "Route " + route;
+    }
+    return route;
+  }
 
   return (
     <View
@@ -307,6 +410,8 @@ export default ({
                 borderBottomColor: e.lineColor,
                 borderBottomWidth: 3,
                 paddingTop: 10,
+                display: "flex",
+                flexDirection: "row",
               }}
             >
               <Text
@@ -316,8 +421,11 @@ export default ({
                   color: darkMode ? "#F7FAFC" : "#1A202C",
                 }}
               >
-                {e.destinations.length > 0 ? e.displayLine : ""}
+                {e.destinations.length > 0
+                  ? fixBusRouteName(e.displayLine)
+                  : ""}
               </Text>
+              <MiniImage type={e.type} />
             </View>
             {e.destinations.map((d) => {
               return (
@@ -332,18 +440,20 @@ export default ({
                 >
                   <TouchableOpacity
                     style={{
-                      width: "200%"
+                      width: "200%",
                     }}
-                    onPress={() => navigation.navigate("Prediction Screen", {
-                      predictionTitle: "Prediction",
-                      lineColor: lineColor,
-                      lineMutedColor: lineMutedColor,
-                      menuTitle: d.destination,
-                      lineName: e.displayLine,
-                      destinationName: d.destination,
-                      nextTripID: d.tripIDs[0],
-                      darkMode: darkMode
-                    })}
+                    onPress={() =>
+                      navigation.navigate("Prediction Screen", {
+                        predictionTitle: "Prediction",
+                        lineColor: e.lineColor,
+                        lineMutedColor: lineMutedColor,
+                        menuTitle: d.destination,
+                        lineName: e.displayLine,
+                        destinationName: d.destination,
+                        nextTripID: d.tripIDs[0],
+                        darkMode: darkMode,
+                      })
+                    }
                   >
                     <View
                       style={{
@@ -367,20 +477,28 @@ export default ({
                         minHeight: 20,
                       }}
                     >
-                      {d.times.map((t) => {
+                      {d.times.map((t, predictionIndex) => {
                         return (
                           <View
                             key={d.destination + "-" + t + "-" + Math.random()}
+                            style={{
+                              display: "flex",
+                              flexDirection: "row-reverse",
+                            }}
                           >
+                            <MiniImage
+                              type={`crowding-${d.capacities[predictionIndex]}`}
+                            />
+
                             <Text
                               style={{
-                                textAlign: "right",
                                 fontSize: 18,
                                 fontWeight: t === d.times[0] ? "700" : "400",
                                 color: darkMode ? "#F7FAFC" : "#1A202C",
+                                marginTop: -20
                               }}
                             >
-                              {t}
+                              {prettyTime(t, d.timesTypes[predictionIndex])}
                             </Text>
                           </View>
                         );

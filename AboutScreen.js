@@ -31,7 +31,7 @@ export default ({ route, navigation }) => {
           color: darkMode ? "#F7FAFC" : "#1A202C",
         }}
       >
-        Version 0.2.1
+        Version 0.2.2
       </Text>
       <Text
         style={{
@@ -53,6 +53,27 @@ export default ({ route, navigation }) => {
       >
         This app was created by Christian Bernier and has been in development since March 2020. The purpose of this app is to be a mobile version of the MBTA Wiki website, accessible at mbtawiki.com.
         This app has information about every line and station on the MBTA network. Use station pages to find information on when trains and buses will arrive and save your favorites for easy access.
+      </Text>
+
+      <Text
+        style={{
+          fontSize: 32,
+          fontWeight: "800",
+          marginTop: 30,
+          color: darkMode ? "#F7FAFC" : "#1A202C",
+        }}
+      >
+        What's new in 0.2.2?
+      </Text>
+      <Text
+        style={{
+          fontSize: 22,
+          fontWeight: "500",
+          marginTop: 10,
+          color: darkMode ? "#F7FAFC" : "#1A202C",
+        }}
+      >
+        This update adds icons for lines in prediction lists, adds capacity icons for supported bus routes, and updates predictions live, every second.
       </Text>
 
       <Text

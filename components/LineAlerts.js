@@ -77,6 +77,7 @@ export default ({ darkMode, line, lineMutedColor, lineLinkColor, Link }) => {
                   style={{
                     fontSize: 36,
                     fontWeight: "900",
+                    color: "#1A202C"
                   }}
                 >
                   {a.title}
@@ -85,6 +86,7 @@ export default ({ darkMode, line, lineMutedColor, lineLinkColor, Link }) => {
                   style={{
                     fontSize: 22,
                     fontWeight: "600",
+                    color: "#1A202C"
                   }}
                 >
                   {a.body}
@@ -118,6 +120,7 @@ export default ({ darkMode, line, lineMutedColor, lineLinkColor, Link }) => {
                   style={{
                     fontSize: 36,
                     fontWeight: "900",
+                    color: "#1A202C"
                   }}
                 >
                   {a.title}
@@ -126,6 +129,7 @@ export default ({ darkMode, line, lineMutedColor, lineLinkColor, Link }) => {
                   style={{
                     fontSize: 22,
                     fontWeight: "600",
+                    color: "#1A202C"
                   }}
                 >
                   {a.body}

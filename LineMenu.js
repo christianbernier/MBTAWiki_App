@@ -13,6 +13,7 @@ export default ({ route, navigation }) => {
   const { darkMode } = route.params;
 
   //Variables for each line
+  const [loadingStationList, setLoadingStationList] = useState(true);
   const [directions, setDirections] = useState(["a", "b"]);
   const [selectedDirection, setSelectedDirection] = useState("");
   const [branches, setBranches] = useState(["a", "b"]);
@@ -226,6 +227,7 @@ export default ({ route, navigation }) => {
             });
         }
         setStations(newStations);
+        setLoadingStationList(newStations.length === 0);
       }
     }
 
@@ -310,6 +312,19 @@ export default ({ route, navigation }) => {
       >
         Station Stops
       </Text>
+      {loadingStationList ? (
+        <Text
+          style={{
+            fontSize: 24,
+            fontWeight: "500",
+            color: darkMode ? "#F7FAFC" : "#1A202C",
+          }}
+        >
+          Loading stations...
+        </Text>
+      ) : (
+        <></>
+      )}
       {stations.map((s) => {
         if (getStaNameFromId(s) !== "NO NAME") {
           return (

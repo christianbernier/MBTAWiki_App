@@ -4,6 +4,7 @@ import MapButton from "./components/MapButton.js";
 import FavoriteButton from "./components/FavoriteButton.js";
 import Predictions from "./components/Predictions.js";
 import AsyncStorage from "@react-native-community/async-storage";
+import MiniImage from "./components/MiniImage.js";
 
 export default ({ route, navigation }) => {
   const {
@@ -126,22 +127,38 @@ export default ({ route, navigation }) => {
         {stationName}
       </Text>
       <View style={{ height: 10 }} />
-      <MapButton color="#718096" lat={lat} lon={lon} />
+      <MapButton 
+        color={lineMutedColor}
+        lat={lat} 
+        lon={lon} 
+      />
       <FavoriteButton
         color={lineMutedColor}
         inFavorites={inFavorites}
         onClick={() => addToFavorites()}
       />
       <View style={{ height: 10 }} />
-      <Text
+      <View
         style={{
-          fontSize: 32,
-          fontWeight: "900",
-          color: darkMode ? "#F7FAFC" : "#1A202C",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between"
         }}
       >
-        Departures
-      </Text>
+        <Text
+          style={{
+            fontSize: 32,
+            fontWeight: "900",
+            color: darkMode ? "#F7FAFC" : "#1A202C",
+          }}
+        >
+          Departures
+        </Text>
+        <MiniImage
+          type={(darkMode) ? "live-dark" : "live-light"}
+        />
+        
+      </View>
       <Predictions
         sta={stationId}
         staFullName={stationName}

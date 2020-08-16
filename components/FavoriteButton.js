@@ -41,7 +41,7 @@ export default ({ color, inFavorites, onClick }) => {
           fontSize: 36,
           fontWeight: "900",
           width: "80%",
-          color: "black",
+          color: "#1A202C",
         }}
       >
         {(inFavorites) ? "Remove from favorites" : "Add to favorites"}

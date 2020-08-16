@@ -29,7 +29,8 @@ export default ({ color, text, whenPressed }) => {
         <Text
           style={{
             fontSize: 36,
-            fontWeight: "900"
+            fontWeight: "900",
+            color: "#1A202C"
           }}
         >
           {text}

@@ -51,7 +51,7 @@ export default ({ color, text, image, whenPressed, textColor }) => {
             fontSize: 36,
             fontWeight: "900",
             width: (image) ? "80%" : "95%",
-            color: (textColor || "black"),
+            color: (textColor || "#1A202C"),
           }}
         >
           {text}

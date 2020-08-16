@@ -105,7 +105,7 @@ export default ({ route, navigation }) => {
       <Text
         style={{
           fontSize: 32,
-          fontWeight: "900",
+          fontWeight: "700",
           marginTop: 30,
           color: darkMode ? "#F7FAFC" : "#1A202C",
         }}
@@ -116,7 +116,7 @@ export default ({ route, navigation }) => {
         <Text
           style={{
             fontSize: 32,
-            fontWeight: "900",
+            fontWeight: "700",
             marginTop: 30,
             color: darkMode ? "#F7FAFC" : "#1A202C",
           }}
@@ -127,7 +127,7 @@ export default ({ route, navigation }) => {
         <Text
           style={{
             fontSize: 32,
-            fontWeight: "900",
+            fontWeight: "700",
             marginTop: 30,
             color: darkMode ? "#F7FAFC" : "#1A202C",
           }}

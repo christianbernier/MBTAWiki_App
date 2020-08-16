@@ -29,7 +29,7 @@ export default ({ lat, lon, color }) => {
           style={{
             fontSize: 36,
             fontWeight: "900",
-            color: "#F7FAFC"
+            color: "#1A202C"
           }}
         >
           Open in Maps
