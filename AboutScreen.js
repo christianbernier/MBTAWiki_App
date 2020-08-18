@@ -63,7 +63,7 @@ export default ({ route, navigation }) => {
           color: darkMode ? "#F7FAFC" : "#1A202C",
         }}
       >
-        What's new in 0.2.2?
+        What's new in 0.2.2/0.2.3?
       </Text>
       <Text
         style={{
@@ -73,7 +73,7 @@ export default ({ route, navigation }) => {
           color: darkMode ? "#F7FAFC" : "#1A202C",
         }}
       >
-        This update adds icons for lines in prediction lists, adds capacity icons for supported bus routes, and updates predictions live, every second.
+        0.2.2 adds icons for lines in prediction lists, adds capacity icons for supported bus routes, and updates predictions live, every second. 0.2.3 fixed a small bug with positioning the capacity icons.
       </Text>
 
       <Text

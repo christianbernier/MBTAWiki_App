@@ -36,10 +36,11 @@ export default ({
   const [dispsAdded, setDispsAdded] = useState(false);
   const [addCapacities, setAddCapacities] = useState(false);
   const [updateTimes, setUpdateTimes] = useState(0);
+  const [loadingDepartures, setLoadingDepartures] = useState(true);
 
   useEffect(() => {
     setInterval(() => {
-      setUpdateTimes(Math.random())
+      setUpdateTimes(Math.random());
     }, 1000);
   }, []);
 
@@ -236,7 +237,7 @@ export default ({
   }, [dispsAdded]);
 
   function prettyTime(t, type) {
-    if(type === "s"){
+    if (type === "s") {
       return t;
     }
 
@@ -334,6 +335,7 @@ export default ({
       }
 
       setPredictions(predictionsNow);
+      setLoadingDepartures(predictionsNow.length === 1);
       setAddCapacities(true);
     }
   }, [destsAdded]);
@@ -377,7 +379,9 @@ export default ({
             });
         }
       }
+
       setPredictions(predictionsNow);
+      
     };
 
     getVehicle();
@@ -396,6 +400,15 @@ export default ({
         minHeight: 40,
       }}
     >
+      <Text
+        style={{
+          fontSize: 22,
+          fontWeight: "700",
+          color: darkMode ? "#F7FAFC" : "#1A202C",
+        }}
+      >
+        {loadingDepartures ? "Loading predictions..." : ""}
+      </Text>
       {predictions.map((e) => {
         return (
           <View
@@ -484,6 +497,8 @@ export default ({
                             style={{
                               display: "flex",
                               flexDirection: "row-reverse",
+                              alignItems: "flex-end",
+                              height: 21,
                             }}
                           >
                             <MiniImage
@@ -495,7 +510,7 @@ export default ({
                                 fontSize: 18,
                                 fontWeight: t === d.times[0] ? "700" : "400",
                                 color: darkMode ? "#F7FAFC" : "#1A202C",
-                                marginTop: -20
+                                height: "140%",
                               }}
                             >
                               {prettyTime(t, d.timesTypes[predictionIndex])}
